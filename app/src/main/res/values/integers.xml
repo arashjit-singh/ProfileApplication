@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="email_length">20</integer>
+    <integer name="password_length">25</integer>
+
+</resources>
