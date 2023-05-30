@@ -1,17 +1,25 @@
 package com.android.profileapplication.ui.login
 
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.profileapplication.R
 import com.android.profileapplication.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +29,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
 
-    val viewModel by viewModels<LoginViewModel>()
+    private val viewModel by viewModels<LoginViewModel>()
     lateinit var binding: FragmentLoginBinding
 
     override fun onCreateView(
@@ -36,6 +44,38 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setClickListeners()
         setObservers()
+        setTextSpan()
+    }
+
+    private fun setTextSpan() {
+
+        val fullText = getString(R.string.new_to_logistics_register)
+        val coloredText = "Register"
+
+        val spannable = SpannableStringBuilder(fullText)
+        val startIndex = fullText.indexOf(coloredText)
+        val endIndex = startIndex + coloredText.length
+
+        spannable.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.colorPrimary)),
+            startIndex, // start
+            endIndex, // end
+            Spannable.SPAN_EXCLUSIVE_INCLUSIVE
+        )
+        spannable.setSpan(
+            StyleSpan(Typeface.BOLD),
+            startIndex, // start
+            endIndex, // end
+            Spannable.SPAN_EXCLUSIVE_INCLUSIVE
+        )
+        spannable.setSpan(
+            RelativeSizeSpan(1.1f),
+            startIndex, // start
+            endIndex, // end
+            Spannable.SPAN_EXCLUSIVE_INCLUSIVE
+        )
+        binding.registerTxtVw.text = spannable
+
     }
 
     private fun setObservers() {
@@ -44,10 +84,14 @@ class LoginFragment : Fragment() {
                 launch {
                     viewModel.uiLoginState.collectLatest { loginState ->
                         when (loginState) {
+
                             is LoginState.ShowErrorSnackBar -> {
+
+                                val message = getString(loginState.message)
+
                                 Snackbar.make(
                                     binding.root,
-                                    loginState.message,
+                                    message,
                                     Snackbar.LENGTH_SHORT
                                 ).show()
                                 viewModel.onEvent(LoginUiEvent.OnSnackBarShown)

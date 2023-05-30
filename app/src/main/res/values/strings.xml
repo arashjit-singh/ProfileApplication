@@ -5,6 +5,8 @@
     <string name="login">Login</string>
     <string name="login_with_google">Login With Google</string>
 
+    <string name="email_password_required">Email and Password are required</string>
+
     <string name="err_email_required">Email is Required</string>
     <string name="err_invalid_email">Invalid Email</string>
     <string name="err_email_too_long">Email too long</string>
@@ -13,4 +15,6 @@
     <string name="forgot_password">Forgot Password?</string>
     <string name="or">OR</string>
     <string name="new_to_logistics_register">New to Logistics? Register</string>
+    <string name="don_t_worry_it_happens_please_enter_the_address_associated_with_your_account">Don\'t worry! It Happens. Please enter the address associated with your account.</string>
+    <string name="submit">Submit</string>
 </resources>

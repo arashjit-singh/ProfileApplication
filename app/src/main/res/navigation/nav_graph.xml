@@ -8,4 +8,8 @@
         android:id="@+id/loginFragment"
         android:name="com.android.profileapplication.ui.login.LoginFragment"
         android:label="LoginFragment" />
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.android.profileapplication.ui.forgotPassword.ForgotPasswordFragment"
+        android:label="ForgotPasswordFragment" />
 </navigation>

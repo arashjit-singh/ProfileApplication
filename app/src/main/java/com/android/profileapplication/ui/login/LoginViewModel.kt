@@ -3,32 +3,28 @@ package com.android.profileapplication.ui.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.profileapplication.R
-import com.android.profileapplication.utility.ResourceHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(val resourceHelper: ResourceHelper) : ViewModel() {
+class LoginViewModel @Inject constructor() : ViewModel() {
 
-    private var _uiLoginState = MutableStateFlow<LoginState>(LoginState.DefaultState)
-    val uiLoginState = _uiLoginState.asStateFlow()
+    private var _uiLoginState = MutableSharedFlow<LoginState>()
+    val uiLoginState = _uiLoginState.asSharedFlow()
 
     fun onEvent(uiEvent: LoginUiEvent) {
         when (uiEvent) {
             is LoginUiEvent.OnLoginClicked -> {
-                viewModelScope.launch {
-                    sendStateUpdateEvent(LoginState.CloseSoftKeyboard)
-                    delay(10)
-                    validateLogin(uiEvent.email, uiEvent.password)
-                }
+                sendStateUpdateEvent(LoginState.CloseSoftKeyboard)
+                validateLogin(uiEvent.email, uiEvent.password)
             }
 
             is LoginUiEvent.OnSnackBarShown -> {
-                _uiLoginState.value = LoginState.DefaultState
+                sendStateUpdateEvent(LoginState.DefaultState)
+//                _uiLoginState.value = LoginState.DefaultState
             }
 
             else -> {
@@ -39,53 +35,43 @@ class LoginViewModel @Inject constructor(val resourceHelper: ResourceHelper) : V
 
     private fun validateLogin(email: String, password: String) {
 
-        //blank email
-        if (email.isBlank() || email.trim().isBlank()) {
-            sendStateUpdateEvent(
+        //blank email or password
+        if (email.isBlank() || email.trim().isBlank() || password.isBlank() || password.trim()
+                .isBlank()
+        ) {
+            return sendStateUpdateEvent(
                 LoginState.ShowErrorSnackBar(
-                    resourceHelper.getString(R.string.err_email_required)
+                    R.string.email_password_required
                 )
             )
-            return
         }
 
         val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
         val isValidEmail = emailRegex.matches(email)
 
         if (!isValidEmail) {
-            sendStateUpdateEvent(
+            return sendStateUpdateEvent(
                 LoginState.ShowErrorSnackBar(
-                    resourceHelper.getString(R.string.err_invalid_email)
+                    R.string.err_invalid_email
                 )
             )
-            return
+
         }
 
-        if (email.length > 20) {
-            sendStateUpdateEvent(
+        if (email.length > /*R.integer.email_length*/ 20) {
+            return sendStateUpdateEvent(
                 LoginState.ShowErrorSnackBar(
-                    resourceHelper.getString(R.string.err_email_too_long)
+                    (R.string.err_email_too_long)
                 )
             )
-            return
-        }
-
-        if (password.isBlank() || password.trim().isBlank()) {
-            sendStateUpdateEvent(
-                LoginState.ShowErrorSnackBar(
-                    resourceHelper.getString(R.string.err_password_is_required)
-                )
-            )
-            return
         }
 
         if (password.length > 20) {
-            sendStateUpdateEvent(
+            return sendStateUpdateEvent(
                 LoginState.ShowErrorSnackBar(
-                    resourceHelper.getString(R.string.err_password_too_long)
+                    (R.string.err_password_too_long)
                 )
             )
-            return
         }
 
     }
