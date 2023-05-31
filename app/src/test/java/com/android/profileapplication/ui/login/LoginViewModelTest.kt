@@ -3,6 +3,7 @@ package com.android.profileapplication.ui.login
 import app.cash.turbine.test
 import com.android.profileapplication.MainDispatcherRule
 import com.android.profileapplication.R
+import com.android.profileapplication.utility.Constants
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -29,7 +30,7 @@ class LoginViewModelTest {
             loginViewModel.onEvent(LoginUiEvent.OnLoginClicked("", ""))
             assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
             assertEquals(
-                awaitItem(), LoginState.ShowErrorSnackBar(R.string.email_password_required)
+                awaitItem(), LoginState.ShowSnackBarFromResId(R.string.email_password_required)
             )
             cancelAndIgnoreRemainingEvents()
         }
@@ -42,7 +43,7 @@ class LoginViewModelTest {
             loginViewModel.onEvent(LoginUiEvent.OnLoginClicked("", "password"))
             assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
             assertEquals(
-                awaitItem(), LoginState.ShowErrorSnackBar(R.string.email_password_required)
+                awaitItem(), LoginState.ShowSnackBarFromResId(R.string.email_password_required)
             )
             cancelAndIgnoreRemainingEvents()
         }
@@ -55,7 +56,7 @@ class LoginViewModelTest {
             loginViewModel.onEvent(LoginUiEvent.OnLoginClicked("abc", "password"))
             assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
             assertEquals(
-                awaitItem(), LoginState.ShowErrorSnackBar(R.string.err_invalid_email)
+                awaitItem(), LoginState.ShowSnackBarFromResId(R.string.err_invalid_email)
             )
             cancelAndIgnoreRemainingEvents()
         }
@@ -74,7 +75,7 @@ class LoginViewModelTest {
             )
             assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
             assertEquals(
-                awaitItem(), LoginState.ShowErrorSnackBar(R.string.err_email_too_long)
+                awaitItem(), LoginState.ShowSnackBarFromResId(R.string.err_email_too_long)
             )
             cancelAndIgnoreRemainingEvents()
         }
@@ -89,7 +90,7 @@ class LoginViewModelTest {
                 loginViewModel.onEvent(LoginUiEvent.OnLoginClicked("test@gmail.com", ""))
                 assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
                 assertEquals(
-                    awaitItem(), LoginState.ShowErrorSnackBar(R.string.email_password_required)
+                    awaitItem(), LoginState.ShowSnackBarFromResId(R.string.email_password_required)
                 )
                 cancelAndIgnoreRemainingEvents()
             }
@@ -111,9 +112,17 @@ class LoginViewModelTest {
             )
             assertEquals(awaitItem(), LoginState.CloseSoftKeyboard)
             assertEquals(
-                awaitItem(), LoginState.ShowErrorSnackBar(R.string.err_password_too_long)
+                awaitItem(), LoginState.ShowSnackBarFromResId(R.string.err_password_too_long)
             )
             cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `test_onClick_forgot_password_receive_navigate_event`() = runTest {
+        loginViewModel.uiLoginState.test {
+            loginViewModel.onEvent(LoginUiEvent.OnForgotPassword)
+            assertEquals(awaitItem(), LoginState.OnNavigate(Constants.ROUTE_FORGOT_PASSWORD))
         }
     }
 

@@ -3,6 +3,9 @@ package com.android.profileapplication.ui.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.profileapplication.R
+import com.android.profileapplication.data.remote.repository.FirebaseAuthRepository
+import com.android.profileapplication.utility.Constants
+import com.android.profileapplication.utility.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -10,7 +13,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(private val authRepository: FirebaseAuthRepository) :
+    ViewModel() {
 
     private var _uiLoginState = MutableSharedFlow<LoginState>()
     val uiLoginState = _uiLoginState.asSharedFlow()
@@ -24,7 +28,10 @@ class LoginViewModel @Inject constructor() : ViewModel() {
 
             is LoginUiEvent.OnSnackBarShown -> {
                 sendStateUpdateEvent(LoginState.DefaultState)
-//                _uiLoginState.value = LoginState.DefaultState
+            }
+
+            is LoginUiEvent.OnForgotPassword -> {
+                sendStateUpdateEvent(LoginState.OnNavigate(Constants.ROUTE_FORGOT_PASSWORD))
             }
 
             else -> {
@@ -40,7 +47,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
                 .isBlank()
         ) {
             return sendStateUpdateEvent(
-                LoginState.ShowErrorSnackBar(
+                LoginState.ShowSnackBarFromResId(
                     R.string.email_password_required
                 )
             )
@@ -51,7 +58,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
 
         if (!isValidEmail) {
             return sendStateUpdateEvent(
-                LoginState.ShowErrorSnackBar(
+                LoginState.ShowSnackBarFromResId(
                     R.string.err_invalid_email
                 )
             )
@@ -60,7 +67,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
 
         if (email.length > /*R.integer.email_length*/ 20) {
             return sendStateUpdateEvent(
-                LoginState.ShowErrorSnackBar(
+                LoginState.ShowSnackBarFromResId(
                     (R.string.err_email_too_long)
                 )
             )
@@ -68,12 +75,36 @@ class LoginViewModel @Inject constructor() : ViewModel() {
 
         if (password.length > 20) {
             return sendStateUpdateEvent(
-                LoginState.ShowErrorSnackBar(
+                LoginState.ShowSnackBarFromResId(
                     (R.string.err_password_too_long)
                 )
             )
         }
 
+        signInUserWithFirebase(email, password)
+
+    }
+
+    private fun signInUserWithFirebase(email: String, password: String) {
+        viewModelScope.launch {
+            authRepository.signInUser(email, password).collect {
+                when (it) {
+                    is Resource.Error -> {
+                        sendStateUpdateEvent(LoginState.OnLoading(false))
+                        sendStateUpdateEvent(LoginState.ShowSnackBar(it.message ?: ""))
+                    }
+
+                    is Resource.Loading -> {
+                        sendStateUpdateEvent(LoginState.OnLoading(true))
+                    }
+
+                    is Resource.Success -> {
+                        sendStateUpdateEvent(LoginState.OnLoading(false))
+                        sendStateUpdateEvent(LoginState.ShowSnackBarFromResId(R.string.signIn_successfully))
+                    }
+                }
+            }
+        }
     }
 
     private fun sendStateUpdateEvent(event: LoginState) {

@@ -1,11 +1,9 @@
 package com.android.profileapplication.di
 
-import android.content.Context
-import com.android.profileapplication.utility.ResourceHelper
+import com.android.profileapplication.data.remote.repository.FirebaseAuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -14,7 +12,7 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun provideResourceHelper(@ApplicationContext context: Context): ResourceHelper {
-        return ResourceHelper(context)
+    fun provideFirebaseRepository(): FirebaseAuthRepository {
+        return FirebaseAuthRepository()
     }
 }

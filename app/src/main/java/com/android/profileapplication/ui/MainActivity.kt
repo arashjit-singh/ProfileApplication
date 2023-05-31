@@ -1,4 +1,4 @@
-package com.android.profileapplication
+package com.android.profileapplication.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

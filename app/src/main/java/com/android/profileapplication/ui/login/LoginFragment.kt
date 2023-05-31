@@ -19,6 +19,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.android.profileapplication.R
 import com.android.profileapplication.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
@@ -33,8 +34,7 @@ class LoginFragment : Fragment() {
     lateinit var binding: FragmentLoginBinding
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentLoginBinding.inflate(layoutInflater)
         return binding.root
@@ -63,14 +63,12 @@ class LoginFragment : Fragment() {
             Spannable.SPAN_EXCLUSIVE_INCLUSIVE
         )
         spannable.setSpan(
-            StyleSpan(Typeface.BOLD),
-            startIndex, // start
+            StyleSpan(Typeface.BOLD), startIndex, // start
             endIndex, // end
             Spannable.SPAN_EXCLUSIVE_INCLUSIVE
         )
         spannable.setSpan(
-            RelativeSizeSpan(1.1f),
-            startIndex, // start
+            RelativeSizeSpan(1.1f), startIndex, // start
             endIndex, // end
             Spannable.SPAN_EXCLUSIVE_INCLUSIVE
         )
@@ -84,21 +82,32 @@ class LoginFragment : Fragment() {
                 launch {
                     viewModel.uiLoginState.collectLatest { loginState ->
                         when (loginState) {
-
-                            is LoginState.ShowErrorSnackBar -> {
-
+                            is LoginState.ShowSnackBarFromResId -> {
                                 val message = getString(loginState.message)
-
                                 Snackbar.make(
-                                    binding.root,
-                                    message,
-                                    Snackbar.LENGTH_SHORT
+                                    binding.root, message, Snackbar.LENGTH_SHORT
+                                ).show()
+                                viewModel.onEvent(LoginUiEvent.OnSnackBarShown)
+                            }
+
+                            is LoginState.ShowSnackBar -> {
+                                Snackbar.make(
+                                    binding.root, loginState.message, Snackbar.LENGTH_SHORT
                                 ).show()
                                 viewModel.onEvent(LoginUiEvent.OnSnackBarShown)
                             }
 
                             is LoginState.CloseSoftKeyboard -> {
                                 closeKeyboard(binding.root)
+                            }
+
+                            is LoginState.OnNavigate -> {
+                                findNavController().navigate(R.id.forgotPasswordFragment)
+                            }
+
+                            is LoginState.OnLoading -> {
+                                binding.progressBar.visibility =
+                                    if (loginState.isLoading) View.VISIBLE else View.GONE
                             }
 
                             else -> {
@@ -119,6 +128,9 @@ class LoginFragment : Fragment() {
                     binding.passwordAddressEdtTxt.text.toString()
                 )
             )
+        }
+        binding.forgotPwdTxtVw.setOnClickListener {
+            viewModel.onEvent(LoginUiEvent.OnForgotPassword)
         }
     }
 
